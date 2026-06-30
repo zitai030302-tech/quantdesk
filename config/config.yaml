@@ -1,0 +1,94 @@
+{
+  "app": {
+    "name": "binance-spot-quant",
+    "timezone": "Asia/Shanghai",
+    "mode": "paper",
+    "log_level": "INFO",
+    "dashboard": {
+      "enabled": true,
+      "terminal_enabled": true,
+      "web_enabled": false,
+      "refresh_interval_sec": 1.0,
+      "max_rows": 8,
+      "web_host": "127.0.0.1",
+      "web_port": 8765
+    },
+    "alerts": {
+      "console": true
+    }
+  },
+  "exchange": {
+    "name": "binance",
+    "market_type": "spot",
+    "symbols": ["BTC/USDT", "ETH/USDT"],
+    "timeframes": ["1m", "5m"],
+    "rest_base_url": "https://api.binance.com",
+    "ws_base_url": "wss://stream.binance.com:9443/ws",
+    "ws_api_url": "wss://ws-api.binance.com:443/ws-api/v3",
+    "market_data_rest_base_url": "https://data-api.binance.vision",
+    "market_data_ws_base_url": "wss://data-stream.binance.vision/ws",
+    "testnet_rest_base_url": "https://testnet.binance.vision",
+    "testnet_ws_base_url": "wss://stream.testnet.binance.vision/ws",
+    "testnet_ws_api_url": "wss://ws-api.testnet.binance.vision/ws-api/v3",
+    "warmup_limit": 300,
+    "recv_window_ms": 5000,
+    "subscribe_ticker": false,
+    "subscribe_depth": false,
+    "quote_asset": "USDT",
+    "user_stream_reconnect_delay_sec": 2.0
+  },
+  "strategy": {
+    "active_strategy": "ema_trend",
+    "ema_trend": {
+      "fast_period": 9,
+      "slow_period": 21,
+      "atr_period": 14,
+      "min_trend_strength": 0.0
+    },
+    "rsi_bbands_mean_reversion": {
+      "rsi_period": 14,
+      "rsi_overbought": 72,
+      "rsi_oversold": 28,
+      "bb_period": 20,
+      "bb_stddev": 2.0,
+      "exit_at_midline": true
+    }
+  },
+  "risk": {
+    "max_trade_risk_pct": 0.005,
+    "daily_loss_limit_pct": 0.02,
+    "max_loss_streak": 3,
+    "atr_period": 14,
+    "atr_stop_mult": 1.5,
+    "atr_take_profit_mult": 3.0,
+    "slippage_bps": 8,
+    "max_open_positions": 1,
+    "allow_live": false,
+    "allow_margin": false,
+    "allow_futures": false,
+    "allow_martingale": false,
+    "allow_grid_average_down": false
+  },
+  "execution": {
+    "retry_attempts": 3,
+    "retry_backoff_sec": 1.0,
+    "request_timeout_sec": 10.0,
+    "fee_rate": 0.001,
+    "paper_initial_cash": 10000.0,
+    "sync_interval_sec": 3.0,
+    "paper_fill_model": "close_with_slippage",
+    "default_order_type": "market",
+    "monitor_reference_cash": 10000.0
+  },
+  "storage": {
+    "sqlite_path": "data/trading.db",
+    "artifact_dir": "artifacts",
+    "log_path": "logs/system.log"
+  },
+  "backtest": {
+    "initial_cash": 10000.0,
+    "fee_rate": 0.001,
+    "default_csv": "tests/fixtures/btcusdt_1m_sample.csv",
+    "output_dir": "artifacts"
+  }
+}

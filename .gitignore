@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Local runtime state
+*.db
+*.sqlite
+*.sqlite3
+data/*.db
+data/*.sqlite
+logs/
+artifacts/
+outputs/
+
+# Local launchers and generated apps
+*.command
+*.app/
+
+# Reference books / copyrighted PDFs
+ref/*.pdf
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
