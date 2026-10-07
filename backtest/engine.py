@@ -9,7 +9,7 @@ from data.models import AccountSnapshot, Balance, ExchangeRule, SignalType, utc_
 from risk.manager import RiskManager
 from strategies.base import BaseStrategy
 from backtest.broker import BacktestBroker
-from backtest.metrics import max_drawdown, sharpe_ratio, win_rate
+from backtest.metrics import max_drawdown, periods_per_year, sharpe_ratio, win_rate
 from backtest.report import save_equity_curve
 
 
@@ -38,6 +38,7 @@ class BacktestEngine:
         self.broker = BacktestBroker(initial_cash=backtest_config.initial_cash, fee_rate=backtest_config.fee_rate)
 
     def run(self, csv_path: str, symbol: str, timeframe: str) -> BacktestResult:
+        annual_periods = periods_per_year(timeframe)
         bars = load_ohlcv_csv(csv_path, symbol=symbol, timeframe=timeframe)
         timestamps: list[str] = []
         for bar in bars:
@@ -85,7 +86,7 @@ class BacktestEngine:
             total_return=total_return,
             max_drawdown=max_drawdown(equity_curve),
             win_rate=win_rate(trade_pnls),
-            sharpe=sharpe_ratio(returns, periods_per_year=525600),
+            sharpe=sharpe_ratio(returns, periods_per_year=annual_periods),
             trades=[
                 {
                     "symbol": trade.symbol,
@@ -101,3 +102,4 @@ class BacktestEngine:
             ],
             equity_curve_path=equity_curve_path,
         )
+
