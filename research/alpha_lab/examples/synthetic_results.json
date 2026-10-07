@@ -1,7 +1,7 @@
 {
   "config": {
     "data_sha256": "d6369bdcdf1b843e21e278e4d5ca4e4fa7de5aef538c86854abd465737d6ad8c",
-    "source_sha256": "2acd7e0f7dc46f2ac09cf8679a70a04f5f2ec2bdcd1a960e3b2ac00f452a4df7",
+    "source_sha256": "67159dabb4db928b0f9b39bd16332c4e87ef43bf44e4bb5d2fc5f31e143295ec",
     "train_fraction": 0.6,
     "cost_bps": 5,
     "signal_to_return_bars": 2,

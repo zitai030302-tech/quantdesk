@@ -116,3 +116,16 @@ def test_failed_and_duplicate_candidates_are_visible(tmp_path):
 def test_extra_proposal_fields_are_rejected():
     with pytest.raises(ValueError):
         Proposal.from_dict({"name": "x", "hypothesis": "x", "expression": "close", "execute_python": "x"})
+
+
+def test_holdout_only_signal_cannot_qualify_a_candidate(tmp_path):
+    panel = tmp_path / "panel.csv"
+    synthetic(days=100, assets=4).to_csv(panel, index=False)
+    proposals = tmp_path / "ideas.json"
+    proposals.write_text(json.dumps([{"name": "late", "hypothesis": "long lookback",
+                                      "expression": "rank(delay(close, 80))"}]))
+    # The factor has 20 valid holdout dates but none in the 60-date
+    # development interval. Holdout availability must not qualify it.
+    result = run(panel, proposals, tmp_path / "out")
+    assert result[0]["status"] == "failed"
+    assert "development period" in result[0]["error"]

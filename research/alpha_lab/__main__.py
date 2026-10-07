@@ -51,8 +51,9 @@ def run(panel_path, proposals_path, output, train_fraction=.6, cost_bps=5.0):
             seen.add(identity)
             signal = compute(proposal.expression, fields)
             # Do not report an untradeable factor as a successful zero-P&L run.
-            if (signal.count(axis=1) >= 3).sum() < 20 or not (signal.std(axis=1) > 1e-12).any():
-                raise ValueError("insufficient nonconstant cross-sectional signal")
+            development = signal.iloc[:int(len(signal) * train_fraction)]
+            if (development.count(axis=1) >= 3).sum() < 20 or not (development.std(axis=1) > 1e-12).any():
+                raise ValueError("insufficient nonconstant signal in the development period")
             summary, returns = evaluate(signal, fields["close"], train_fraction, cost_bps)
             receipt = ledger.record(asdict(proposal), config, "completed", summary)
             returns.to_csv(output / f"returns_{identity[:12]}.csv", index_label="date")
