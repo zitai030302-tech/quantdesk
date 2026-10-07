@@ -1,5 +1,7 @@
 # QuantDesk
 
+[![tests](https://github.com/zitai030302-tech/quantdesk/actions/workflows/tests.yml/badge.svg)](https://github.com/zitai030302-tech/quantdesk/actions/workflows/tests.yml)
+
 Event-driven crypto strategy research sandbox with backtesting, paper trading, risk control, SQLite persistence, and dashboard monitoring.
 
 > Research and learning only. This project is not investment advice. Live trading is disabled by default.
