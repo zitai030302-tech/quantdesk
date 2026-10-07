@@ -41,3 +41,7 @@ ref/*.pdf
 Thumbs.db
 .vscode/
 .idea/
+
+.matplotlib/
+build/
+*.egg-info/

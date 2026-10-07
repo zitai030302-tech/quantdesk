@@ -2,101 +2,74 @@
 
 [![tests](https://github.com/zitai030302-tech/quantdesk/actions/workflows/tests.yml/badge.svg)](https://github.com/zitai030302-tech/quantdesk/actions/workflows/tests.yml)
 
-Event-driven crypto strategy research sandbox with backtesting, paper trading, risk control, SQLite persistence, and dashboard monitoring.
+A Python sandbox for strategy backtests, paper execution, and local factor experiments.
 
-> Research and learning only. This project is not investment advice. Live trading is disabled by default.
+The execution side connects market bars, strategy signals, risk checks, broker adapters, and SQLite records. The research side evaluates candidate factors on local panel data and keeps the experiment configuration with the result.
 
-![Sample equity curve](docs/assets/equity_curve_btcusdt_1m.png)
-
-## Highlights
-
-- Event-driven runtime for strategy research and paper trading
-- REST/WebSocket market data ingestion for Binance Spot
-- Strategy registry with EMA trend and RSI/Bollinger mean-reversion baselines
-- Backtesting engine with return, drawdown, win-rate, Sharpe, and trade-level reports
-- Risk manager with position sizing, daily-loss stop, consecutive-loss pause, and protection mode
-- SQLite persistence for candles, orders, fills, positions, PnL, risk events, and signals
-- Freqtrade-style CLI compatibility: `trade`, `backtesting`, `webserver`, `show-config`, `list-strategies`
-- Unit and integration tests for core trading flow, risk rules, data clients, order validation, strategies, and dashboard logic
-
-## Architecture
-
-```mermaid
-flowchart LR
-    A["Market Data<br/>REST / WebSocket / CSV"] --> B["Strategy Registry<br/>signals and indicators"]
-    B --> C["Risk Manager<br/>sizing, stops, protection mode"]
-    C --> D["Order Manager<br/>validation and routing"]
-    D --> E["Broker Adapter<br/>paper / testnet / monitor"]
-    E --> F["SQLite Persistence<br/>orders, fills, positions, PnL"]
-    F --> G["Dashboard<br/>state, signals, equity, orders"]
-```
-
-## Project Structure
-
-```text
-app/           CLI, runtime, engine, dashboard, alerts
-backtest/      backtesting engine, broker, metrics, reports
-config/        system and Freqtrade-compatible configs
-data/          market data clients, SQLite repositories, cache
-execution/     broker adapters, order manager, validators
-risk/          position sizing, risk rules, protection mode
-strategies/    strategy base class, indicators, example strategies
-tests/         unit and integration tests
-scripts/       local run helpers
-```
-
-## Quick Start
+## Start with local data
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-```
-
-List available strategies:
-
-```bash
+python -m pip install -r requirements.txt
 python main.py list-strategies
-```
-
-Run a sample backtest:
-
-```bash
 python main.py backtesting -c config/freqtrade_compat.json --csv tests/fixtures/btcusdt_1m_sample.csv
 ```
 
-Start paper trading with the dashboard:
+Run these commands from the repository root. The checked-in CSV is a small execution smoke test; it is too short to establish strategy performance and may produce no trades.
+
+For paper trading and dashboard monitoring:
 
 ```bash
 python main.py trade -c config/freqtrade_compat.json --dry-run --dashboard both
 ```
 
-Start read-only market monitoring:
+That path uses market endpoints. Live trading is disabled in this public version.
+
+## Factor research
+
+[AlphaResearchLab](research/alpha_lab) implements a separate offline loop:
+
+hypothesis → restricted expression → delayed backtest → metrics → correlation → experiment ledger
 
 ```bash
-python main.py trade -c config/freqtrade_compat.json --monitor --dashboard both
+python -m pip install -r requirements-research.txt
+python -m research.alpha_lab --synthetic --output /tmp/alpha-demo
 ```
 
-## Testing
+It records failed proposals, source/data hashes, turnover costs, development/holdout metrics, and signal correlations. Model-generated JSON proposals pass through the same validation as handwritten ones. There is no live LLM adapter or WorldQuant submission integration yet.
+
+## Structure
+
+```text
+app/          CLI, runtime, and dashboard
+backtest/     next-bar broker, metrics, and reports
+execution/    broker adapters and order validation
+risk/         sizing and protection rules
+strategies/   EMA and RSI/Bollinger baselines
+data/         market clients and SQLite repositories
+research/     offline factor experiments
+tests/        unit, integration, and research checks
+```
+
+Backtest Sharpe annualization follows the requested fixed bar interval in a 24/7 market. The factor module uses a separate daily-panel convention with 252 periods per year. Neither engine models every exchange or financing detail.
+
+## Verification
 
 ```bash
-pytest
+python -m pip install -r requirements-research.txt
+python -m pytest -q
 ```
 
-The test suite covers:
+Tests include paper-engine flow, order validation, risk rules, indicator behavior, failed requests, factor causality, delayed execution, holdout separation, and experiment identity. Network-boundary tests use local fixtures.
 
-- strategy registry and indicator behavior
-- risk rules and position sizing
-- order validation and paper broker behavior
-- REST/market data client behavior
-- paper-engine integration flow
-- dashboard data formatting
+To run the CSV smoke test in a container:
 
-## Safety Notes
+```bash
+docker build -t quantdesk .
+docker run --rm quantdesk
+```
 
-- Secrets are loaded from `.env` only and are excluded from version control.
-- Default modes are `paper`, `testnet`, and read-only `monitor`.
-- Live trading is intentionally disabled in this public research version.
-- No profitability claim is made by this repository.
+The default container command uses the checked-in CSV. CI builds the image and runs that command.
 
+[Changes](CHANGELOG.md) · [License](LICENSE)

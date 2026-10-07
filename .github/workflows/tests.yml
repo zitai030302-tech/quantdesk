@@ -20,6 +20,20 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements-research.txt
       - name: Run tests
         run: python -m pytest -q
+      - name: Run offline factor demo
+        run: python -m research.alpha_lab --synthetic --output /tmp/alpha-demo
+      - name: Check package installation
+        run: pip install --no-deps .
+
+  container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build offline backtest image
+        run: docker build -t quantdesk-smoke .
+      - name: Run default CSV example
+        run: docker run --rm quantdesk-smoke
+
