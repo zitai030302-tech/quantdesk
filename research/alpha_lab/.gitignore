@@ -1,0 +1,4 @@
+output/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm

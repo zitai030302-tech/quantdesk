@@ -1,0 +1,139 @@
+{
+  "config": {
+    "data_sha256": "d6369bdcdf1b843e21e278e4d5ca4e4fa7de5aef538c86854abd465737d6ad8c",
+    "source_sha256": "2acd7e0f7dc46f2ac09cf8679a70a04f5f2ec2bdcd1a960e3b2ac00f452a4df7",
+    "train_fraction": 0.6,
+    "cost_bps": 5,
+    "signal_to_return_bars": 2,
+    "periods_per_year": 252,
+    "python": "3.12.14",
+    "numpy": "2.3.5",
+    "pandas": "2.2.3"
+  },
+  "results": [
+    {
+      "name": "reversal_5",
+      "expression": "neg(rank(div(close, delay(close, 5))))",
+      "fingerprint": "dd259f8f3e16f4f6797f6ba8e8582185c9257ac47b7dd762b0e6bfea59c38955",
+      "status": "completed",
+      "metrics": {
+        "train": {
+          "days": 180,
+          "net_return": -0.06062021493682723,
+          "sharpe_252": -1.6393278214095146,
+          "max_drawdown": 0.07738848539348286,
+          "mean_turnover": 0.577376006533566,
+          "rank_ic": 0.00023801428085684832,
+          "ic_dates": 173
+        },
+        "holdout": {
+          "days": 120,
+          "net_return": -0.012968160102508453,
+          "sharpe_252": -0.46370944553542837,
+          "max_drawdown": 0.03937681719969799,
+          "mean_turnover": 0.5695395949208283,
+          "rank_ic": 0.017771684945164505,
+          "ic_dates": 118
+        }
+      },
+      "receipt": {
+        "id": 1,
+        "status": "completed",
+        "duplicate": false
+      }
+    },
+    {
+      "name": "momentum_20",
+      "expression": "rank(div(close, delay(close, 20)))",
+      "fingerprint": "c0c01e1681e8f3a6bac06238f5f81dfa3b94e76b34aca9b73e9ddea7ad3207df",
+      "status": "completed",
+      "metrics": {
+        "train": {
+          "days": 180,
+          "net_return": -0.06904556855687372,
+          "sharpe_252": -1.7669747820247466,
+          "max_drawdown": 0.09030888386924374,
+          "mean_turnover": 0.2802567998516532,
+          "rank_ic": -0.0178518242740134,
+          "ic_dates": 158
+        },
+        "holdout": {
+          "days": 120,
+          "net_return": -0.06727215996626368,
+          "sharpe_252": -2.6236882792015934,
+          "max_drawdown": 0.08314028651446492,
+          "mean_turnover": 0.3448415040360336,
+          "rank_ic": -0.03035892323030907,
+          "ic_dates": 118
+        }
+      },
+      "receipt": {
+        "id": 2,
+        "status": "completed",
+        "duplicate": false
+      }
+    },
+    {
+      "name": "volume_surprise",
+      "expression": "rank(div(volume, ts_mean(volume, 20)))",
+      "fingerprint": "69726fb48d4b9ab24580eb45825f7b6ced5eef597394190263840ec861f5b7ce",
+      "status": "completed",
+      "metrics": {
+        "train": {
+          "days": 180,
+          "net_return": -0.08660498493876345,
+          "sharpe_252": -2.0928888181564633,
+          "max_drawdown": 0.10228815593625773,
+          "mean_turnover": 1.186433519631099,
+          "rank_ic": -0.0049574546799852045,
+          "ic_dates": 159
+        },
+        "holdout": {
+          "days": 120,
+          "net_return": -0.1044867795208505,
+          "sharpe_252": -4.1300237978056105,
+          "max_drawdown": 0.1053325200015971,
+          "mean_turnover": 1.342675612204576,
+          "rank_ic": -0.0036390827517447633,
+          "ic_dates": 118
+        }
+      },
+      "receipt": {
+        "id": 3,
+        "status": "completed",
+        "duplicate": false
+      }
+    },
+    {
+      "name": "low_volatility",
+      "expression": "neg(rank(ts_std(div(close, delay(close, 1)), 20)))",
+      "fingerprint": "36f1ab5e821af5bc03c802d1349a46e4b4a2070afdc44dbdc65d86be925643de",
+      "status": "completed",
+      "metrics": {
+        "train": {
+          "days": 180,
+          "net_return": -0.0011528813512980962,
+          "sharpe_252": -0.0029111793136458283,
+          "max_drawdown": 0.03225643050823923,
+          "mean_turnover": 0.268893281039329,
+          "rank_ic": -0.002084884586746094,
+          "ic_dates": 158
+        },
+        "holdout": {
+          "days": 120,
+          "net_return": -0.05756572740732313,
+          "sharpe_252": -2.3908514024659753,
+          "max_drawdown": 0.06566965475183917,
+          "mean_turnover": 0.3102920686543275,
+          "rank_ic": -0.023678963110668003,
+          "ic_dates": 118
+        }
+      },
+      "receipt": {
+        "id": 4,
+        "status": "completed",
+        "duplicate": false
+      }
+    }
+  ]
+}

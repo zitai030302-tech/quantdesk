@@ -1,0 +1,6 @@
+[
+  {"name": "reversal_5", "hypothesis": "Recent relative losers may revert; use as a baseline rather than a profitability claim.", "expression": "neg(rank(div(close, delay(close, 5))))"},
+  {"name": "momentum_20", "hypothesis": "Medium-horizon relative winners may persist.", "expression": "rank(div(close, delay(close, 20)))"},
+  {"name": "volume_surprise", "hypothesis": "Relative volume surprises may accompany repricing; direction needs empirical scrutiny.", "expression": "rank(div(volume, ts_mean(volume, 20)))"},
+  {"name": "low_volatility", "hypothesis": "Lower trailing return dispersion provides a distinct baseline family.", "expression": "neg(rank(ts_std(div(close, delay(close, 1)), 20)))"}
+]
