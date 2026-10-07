@@ -47,6 +47,9 @@ def test_binance_market_data_feed_falls_back_to_csv_on_http_451() -> None:
         raise httpx.HTTPStatusError("restricted", request=request, response=response)
 
     feed.rest_client.request = failing_request  # type: ignore[method-assign]
+    if feed.market_data_only_rest_client is not None:
+        feed.market_data_only_rest_client.request = failing_request  # type: ignore[method-assign]
+
     warmup = asyncio.run(feed.warmup("BTC/USDT", "1m", 4))
     streamed: list = []
 
