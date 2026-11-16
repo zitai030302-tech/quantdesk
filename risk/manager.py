@@ -22,14 +22,15 @@ class RiskDecision:
 
 
 class RiskManager:
-    def __init__(self, config: RiskConfig, mode: RuntimeMode) -> None:
+    def __init__(self, config: RiskConfig, mode: RuntimeMode, *, fee_rate: float = 0.001) -> None:
         self.config = config
         self.mode = mode
+        self.fee_rate = fee_rate
         self.protect_mode = ProtectModeState()
         self.state = DailyRiskState(trade_date=trading_day(utc_now()))
         self.events: list[RiskEvent] = []
 
-    def _roll_day(self, snapshot: AccountSnapshot) -> None:
+    def observe_account(self, snapshot: AccountSnapshot) -> None:
         today = trading_day(snapshot.timestamp)
         if today != self.state.trade_date:
             self.state = DailyRiskState(
@@ -82,7 +83,7 @@ class RiskManager:
         rule: ExchangeRule,
         bar_history: list[Bar],
     ) -> RiskDecision:
-        self._roll_day(account)
+        self.observe_account(account)
         allowed, reason = ensure_safe_mode(self.mode, self.config.allow_live)
         if not allowed:
             return RiskDecision(False, [reason])
@@ -133,7 +134,7 @@ class RiskManager:
             entry_price=entry,
             stop_loss=stop_loss,
             rule=rule,
-            fee_rate=0.001,
+            fee_rate=self.fee_rate,
             slippage_bps=self.config.slippage_bps,
         )
         if quantity <= 0:
