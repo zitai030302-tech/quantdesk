@@ -1,0 +1,13 @@
+{
+  "symbol": "BTC/USDT",
+  "initial_cash": 1000,
+  "max_position_value": 300,
+  "fee_bps": 10,
+  "slippage_bps": 5,
+  "orders": [
+    {"side": "buy", "quantity": 1, "price": 100},
+    {"side": "buy", "quantity": 3, "price": 100},
+    {"side": "sell", "quantity": 2, "price": 110},
+    {"side": "sell", "quantity": 0.5, "price": 110}
+  ]
+}

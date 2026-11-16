@@ -5,7 +5,7 @@ from pathlib import Path
 
 from app.types import BacktestConfig, RiskConfig, RuntimeMode
 from data.csv_loader import load_ohlcv_csv
-from data.models import AccountSnapshot, Balance, ExchangeRule, SignalType, utc_now
+from data.models import AccountSnapshot, Balance, Bar, ExchangeRule, SignalType
 from risk.manager import RiskManager
 from strategies.base import BaseStrategy
 from backtest.broker import BacktestBroker
@@ -20,7 +20,7 @@ class BacktestResult:
     win_rate: float
     sharpe: float
     trades: list[dict]
-    equity_curve_path: Path
+    equity_curve_path: Path | None
 
 
 class BacktestEngine:
@@ -30,22 +30,36 @@ class BacktestEngine:
         risk_config: RiskConfig,
         strategy: BaseStrategy,
         rule: ExchangeRule,
+        *,
+        slippage_bps: float = 0.0,
     ) -> None:
         self.config = backtest_config
-        self.risk_manager = RiskManager(risk_config, RuntimeMode.BACKTEST)
+        self.risk_manager = RiskManager(risk_config, RuntimeMode.BACKTEST, fee_rate=backtest_config.fee_rate)
         self.strategy = strategy
         self.rule = rule
-        self.broker = BacktestBroker(initial_cash=backtest_config.initial_cash, fee_rate=backtest_config.fee_rate)
+        self.broker = BacktestBroker(
+            backtest_config.initial_cash, backtest_config.fee_rate, slippage_bps, quote_asset=rule.quote_asset,
+        )
 
     def run(self, csv_path: str, symbol: str, timeframe: str) -> BacktestResult:
-        annual_periods = periods_per_year(timeframe)
         bars = load_ohlcv_csv(csv_path, symbol=symbol, timeframe=timeframe)
+        return self.run_bars(bars, symbol, timeframe, save_chart=True)
+
+    def run_bars(
+        self, bars: list[Bar], symbol: str, timeframe: str, *, save_chart: bool = False,
+    ) -> BacktestResult:
+        annual_periods = periods_per_year(timeframe)
         timestamps: list[str] = []
         for bar in bars:
-            fills = self.broker.process_bar(bar)
+            prior_nav = self.broker.equity_curve[-1] if self.broker.equity_curve else self.config.initial_cash
+            # Roll the UTC risk day before processing any fill on this bar.
+            self.risk_manager.observe_account(AccountSnapshot(bar.open_time, {}, prior_nav, self.broker.cash))
+            for fill in self.broker.process_bar(bar):
+                self.risk_manager.observe_account(AccountSnapshot(fill.timestamp, {}, prior_nav, self.broker.cash))
+                self.risk_manager.on_trade_closed(fill)
             account = AccountSnapshot(
-                timestamp=utc_now(),
-                balances={"USDT": Balance(asset="USDT", free=self.broker.cash)},
+                timestamp=bar.close_time,
+                balances={self.rule.quote_asset: Balance(asset=self.rule.quote_asset, free=self.broker.cash)},
                 net_asset_value=self.broker.equity_curve[-1] if self.broker.equity_curve else self.config.initial_cash,
                 available_quote_balance=self.broker.cash,
             )
@@ -66,11 +80,9 @@ class BacktestEngine:
             elif signal.signal_type in {SignalType.FLAT, SignalType.SELL}:
                 self.broker.queue_exit(bar.close_time, signal.reason)
 
-            for fill in fills:
-                self.risk_manager.on_trade_closed(fill)
             timestamps.append(bar.close_time.isoformat())
 
-        equity_curve = self.broker.equity_curve or [self.config.initial_cash]
+        equity_curve = [self.config.initial_cash, *self.broker.equity_curve]
         returns = []
         for index in range(1, len(equity_curve)):
             previous = equity_curve[index - 1]
@@ -78,8 +90,10 @@ class BacktestEngine:
                 returns.append(0.0)
             else:
                 returns.append((equity_curve[index] - previous) / previous)
-        output_path = Path(self.config.output_dir) / f"equity_curve_{symbol.replace('/', '').lower()}_{timeframe}.png"
-        equity_curve_path = save_equity_curve(output_path, timestamps, equity_curve)
+        equity_curve_path = None
+        if save_chart:
+            output_path = Path(self.config.output_dir) / f"equity_curve_{symbol.replace('/', '').lower()}_{timeframe}.png"
+            equity_curve_path = save_equity_curve(output_path, timestamps, self.broker.equity_curve)
         trade_pnls = [trade.pnl for trade in self.broker.trades if trade.exit_price is not None]
         total_return = (equity_curve[-1] - self.config.initial_cash) / self.config.initial_cash
         return BacktestResult(
@@ -95,7 +109,11 @@ class BacktestEngine:
                     "exit_time": trade.exit_time.isoformat() if trade.exit_time else None,
                     "exit_price": trade.exit_price,
                     "quantity": trade.quantity,
-                    "pnl": trade.pnl,
+                    "pnl": trade.pnl if trade.exit_price is not None else None,
+                    "entry_fee": trade.fee,
+                    "exit_fee": trade.exit_fee,
+                    "slippage_cost": trade.slippage_cost,
+                    "exit_reason": trade.exit_reason,
                     "reason": trade.reason,
                 }
                 for trade in self.broker.trades

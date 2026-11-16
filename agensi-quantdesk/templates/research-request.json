@@ -1,0 +1,10 @@
+{
+  "symbol": "BTC/USDT",
+  "timeframe": "1h",
+  "data_source": "User-supplied CSV",
+  "initial_cash": 10000,
+  "fee_bps": 10,
+  "slippage_bps": 5,
+  "risk_per_trade": 0.005,
+  "strategies": [{"name": "ema_trend", "parameters": {"fast_period": 9, "slow_period": 21}}]
+}
